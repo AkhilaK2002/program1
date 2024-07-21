@@ -1,0 +1,100 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+#include <string>
+#include <algorithm>
+#include <limits.h>
+
+using namespace std;
+
+typedef unordered_map<string, vector<pair<string, int>>> Graph;
+
+struct Node {
+    string name;
+    int cost;
+    bool operator>(const Node& other) const {
+        return cost > other.cost;
+    }
+};
+
+unordered_map<string, pair<string, int>> dijkstra(const Graph& graph, const string& start) {
+    priority_queue<Node, vector<Node>, greater<Node>> pq;
+    unordered_map<string, pair<string, int>> shortest_paths;
+    unordered_map<string, bool> visited;
+    
+    pq.push({start, 0});
+    shortest_paths[start] = { "", 0 };
+    
+    while (!pq.empty()) {
+        Node current = pq.top();
+        pq.pop();
+        
+        if (visited[current.name]) {
+            continue;
+        }
+        
+        visited[current.name] = true;
+        
+        for (const auto& neighbor : graph.at(current.name)) {
+            string neighbor_name = neighbor.first;
+            int weight = neighbor.second;
+            int cost = current.cost + weight;
+            
+            if (shortest_paths.find(neighbor_name) == shortest_paths.end() || cost < shortest_paths[neighbor_name].second) {
+                shortest_paths[neighbor_name] = { current.name, cost };
+                pq.push({ neighbor_name, cost });
+            }
+        }
+    }
+    
+    return shortest_paths;
+}
+
+vector<string> get_shortest_path(const unordered_map<string, pair<string, int>>& shortest_paths, const string& start, const string& end) {
+    vector<string> path;
+    string current_node = end;
+    
+    if (shortest_paths.find(current_node) == shortest_paths.end()) {
+        return path;
+    }
+    
+    while (current_node != "") {
+        path.push_back(current_node);
+        current_node = shortest_paths.at(current_node).first;
+    }
+    
+    reverse(path.begin(), path.end());
+    return path;
+}
+
+int main() {
+    Graph graph = {
+        {"A", {{"B", 2}, {"C", 4}}},
+        {"B", {{"A", 1}, {"C", 2}, {"D", 3}}},
+        {"C", {{"A", 6}, {"B", 4}, {"D", 1}}},
+        {"D", {{"B", 5}, {"C", 1}}}
+    };
+    
+    string start_node, end_node;
+    cout << "Enter the starting node: ";
+    cin >> start_node;
+    cout << "Enter the ending node: ";
+    cin >> end_node;
+    
+    unordered_map<string, pair<string, int>> shortest_paths = dijkstra(graph, start_node);
+    
+    vector<string> path = get_shortest_path(shortest_paths, start_node, end_node);
+    
+    if (path.empty()) {
+        cout << "No path found from " << start_node << " to " << end_node << endl;
+    } else {
+        cout << "The shortest path from " << start_node << " to " << end_node << " is: ";
+        for (const auto& node : path) {
+            cout << node << " ";
+        }
+        cout << "with a cost of " << shortest_paths[end_node].second << endl;
+    }
+    
+    return 0;
+}
