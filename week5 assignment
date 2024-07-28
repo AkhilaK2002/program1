@@ -1,0 +1,47 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+pair<int, string> longestCommonSubstring(string str1, string str2) {
+    int n = str1.length();
+    int m = str2.length();
+
+    vector<vector<int>> L(n + 1, vector<int>(m + 1, 0));
+
+    int maxLength = 0;  
+    int endIndex = 0;   
+
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= m; ++j) {
+            if (str1[i - 1] == str2[j - 1]) {
+                L[i][j] = L[i - 1][j - 1] + 1;
+                
+                if (L[i][j] > maxLength) {
+                    maxLength = L[i][j];
+                    endIndex = i - 1;
+                }
+            }
+            else {
+                L[i][j] = 0;
+            }
+        }
+    }
+
+    string result = str1.substr(endIndex - maxLength + 1, maxLength);
+
+    return {maxLength, result};
+}
+
+int main() {
+    string str1 = "ABCB";
+    string str2 = "CACB";
+
+    pair<int, string> lcs = longestCommonSubstring(str1, str2);
+
+    cout << "The length of the longest common substring is: " << lcs.first << endl;
+    cout << "The longest common substring is: " << lcs.second << endl;
+
+    return 0;
+}
