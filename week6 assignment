@@ -1,0 +1,71 @@
+#include <iostream>
+#include <queue>
+#include <vector>
+
+using namespace std;
+
+struct Node {
+    char ch;
+    int freq;
+    Node *left, *right;
+
+    Node(char ch, int freq) {
+        this->ch = ch;
+        this->freq = freq;
+        left = right = nullptr;
+    }
+};
+
+struct compare {
+    bool operator()(Node* l, Node* r) {
+        return (l->freq > r->freq);
+    }
+};
+
+bool isLeaf(Node* node) {
+    return node->left == nullptr && node->right == nullptr;
+}
+
+Node* buildHuffmanTree(string s, int f[]) {
+    int n = s.length();
+
+    // Create a min heap & insert all characters with their frequency
+    priority_queue<Node*, vector<Node*>, compare> minHeap;
+    for (int i = 0; i < n; i++)
+        minHeap.push(new Node(s[i], f[i]));
+
+    // Extract two minimum frequency nodes and merge them until one node is left
+    while (minHeap.size() != 1) {
+        Node *left = minHeap.top(); minHeap.pop();
+        Node *right = minHeap.top(); minHeap.pop();
+
+        Node *node = new Node('$', left->freq + right->freq);
+        node->left = left;
+        node->right = right;
+
+        minHeap.push(node);
+    }
+
+    return minHeap.top();
+}
+
+void printCodes(Node* root, string str) {
+    if (!root)
+        return;
+
+    if (isLeaf(root))
+        cout << root->ch << ": " << str << endl;
+
+    printCodes(root->left, str + "0");
+    printCodes(root->right, str + "1");
+}
+
+int main() {
+    string s = "abcdef";
+    int f[] = {5, 9, 12, 13, 16, 45};
+
+    Node* root = buildHuffmanTree(s, f);
+    printCodes(root, "");
+
+    return 0;
+}
